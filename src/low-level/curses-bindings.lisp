@@ -36,10 +36,21 @@
 #+unicode
 (cffi:define-foreign-library libcurses
   (:darwin (:or "libncurses.dylib" "libcurses.dylib"))
-  (:unix (:or "libncursesw.so.6"
-              "libncursesw.so.5"
-              "libncursesw.so.14.0"
-              "libncursesw.so"))
+  ;; On Unix-like systems, we try unversioned .so files first as these are
+  ;; symlinks managed by the system that point to the correct version.
+  ;; This is the most portable and future-proof approach.
+  ;;
+  ;; FreeBSD: Ports install libncursesw.so (unversioned) in /usr/local/lib
+  ;;          Base system has libncursesw.so.9 in /lib
+  ;; Linux:   Typically libncursesw.so.6 or .so.5
+  ;; *BSD:    OpenBSD/NetBSD may use .so.14.0
+  (:unix (:or "libncursesw.so"            ; Unversioned - preferred (symlink)
+              "libncursesw.so.9"          ; FreeBSD base system
+              "libncursesw.so.8"          ; FreeBSD older base system
+              "libncursesw.so.6"          ; Linux, some BSD ports
+              "libncursesw.so.5"          ; Older Linux
+              "libncursesw.so.14.0"       ; OpenBSD/NetBSD
+              "libcurses"))               ; Generic fallback
   (:windows (:or #-pdcurses "libncursesw6.dll"
                  #+pdcurses "libpdcurses"
                  #+pdcurses "pdcurses"
@@ -50,15 +61,24 @@
 (cffi:define-foreign-library libcurses
   (:darwin (:or "libncurses.dylib"
                 "libcurses.dylib"))
-  (:unix (:or "libncursesw.so.6"        ; XXX: is this the right thing
-                                        ; to load? Should we also add
-                                        ; libncursesw.so as a
-                                        ; fallback?
-              "libncurses.so.6"
-              "libncurses.so.5"
-              "libncursesw.so.14.0"
-              "libncurses.so"
-              "libcurses"))
+  ;; Without unicode support, we try both wide-char and non-wide variants.
+  ;; Unversioned .so files (symlinks) are tried first for maximum portability.
+  ;;
+  ;; FreeBSD: Ports provide libncursesw.so and libncurses.so.6 in /usr/local/lib
+  ;;          Base system has libncursesw.so.9 in /lib
+  ;; Linux:   Package managers provide versioned libraries (.so.6, .so.5)
+  (:unix (:or "libncursesw.so"            ; Wide-char unversioned - preferred
+              "libncurses.so"             ; Non-wide unversioned - preferred
+              "libncursesw.so.9"          ; FreeBSD base system (wide)
+              "libncurses.so.9"           ; FreeBSD base system (non-wide)
+              "libncursesw.so.8"          ; Older FreeBSD (wide)
+              "libncurses.so.8"           ; Older FreeBSD (non-wide)
+              "libncursesw.so.6"          ; Linux/BSD ports (wide)
+              "libncurses.so.6"           ; Linux/BSD ports (non-wide)
+              "libncursesw.so.5"          ; Older Linux (wide)
+              "libncurses.so.5"           ; Older Linux (non-wide)
+              "libncursesw.so.14.0"       ; OpenBSD/NetBSD
+              "libcurses"))               ; Generic fallback
   (:windows (:or #-pdcurses "libncursesw6.dll"
                  #+pdcurses "libpdcurses"         ;MSYS installed pdcurses
                  #+pdcurses "pdcurses"
