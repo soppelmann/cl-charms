@@ -36,11 +36,9 @@
 #+unicode
 (cffi:define-foreign-library libcurses
   (:darwin (:or "libncurses.dylib" "libcurses.dylib"))
-  (:freebsd (:or "libncursesw.so"         ; Unversioned (symlink to correct version)
-                 "libncursesw.so.9"       ; FreeBSD 12.x, 13.x, 14.x
-                 "libncursesw.so.8"       ; FreeBSD 11.x and older
-                 "libcurses"))
-  (:unix (:or "libncursesw.so"            ; Unversioned (symlink) - try first!
+  (:unix (:or "libncursesw.so"            ; Unversioned (symlink) - works across platforms
+              "libncursesw.so.9"          ; FreeBSD 12.x, 13.x, 14.x
+              "libncursesw.so.8"          ; FreeBSD 11.x and older
               "libncursesw.so.6"          ; Linux (Debian, Ubuntu, etc.)
               "libncursesw.so.5"          ; Older Linux
               "libncursesw.so.14.0"       ; OpenBSD/NetBSD
@@ -55,15 +53,12 @@
 (cffi:define-foreign-library libcurses
   (:darwin (:or "libncurses.dylib"
                 "libcurses.dylib"))
-  (:freebsd (:or "libncursesw.so"         ; Wide-char version (preferred)
-                 "libncursesw.so.9"       ; FreeBSD 12.x, 13.x, 14.x
-                 "libncursesw.so.8"       ; FreeBSD 11.x and older
-                 "libncurses.so"          ; Non-wide version
-                 "libncurses.so.9"
-                 "libncurses.so.8"
-                 "libcurses"))
-  (:unix (:or "libncursesw.so"            ; Try wide-char unversioned first
-              "libncurses.so"             ; Then non-wide unversioned
+  (:unix (:or "libncursesw.so"            ; Wide-char unversioned (symlink)
+              "libncurses.so"             ; Non-wide unversioned (symlink)
+              "libncursesw.so.9"          ; FreeBSD wide-char
+              "libncurses.so.9"           ; FreeBSD non-wide
+              "libncursesw.so.8"          ; Older FreeBSD wide-char
+              "libncurses.so.8"           ; Older FreeBSD non-wide
               "libncursesw.so.6"          ; Linux wide-char
               "libncurses.so.6"           ; Linux non-wide
               "libncursesw.so.5"          ; Older Linux wide-char
