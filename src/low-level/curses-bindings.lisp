@@ -36,10 +36,15 @@
 #+unicode
 (cffi:define-foreign-library libcurses
   (:darwin (:or "libncurses.dylib" "libcurses.dylib"))
-  (:unix (:or "libncursesw.so.6"
-              "libncursesw.so.5"
-              "libncursesw.so.14.0"
-              "libncursesw.so"))
+  (:freebsd (:or "libncursesw.so"         ; Unversioned (symlink to correct version)
+                 "libncursesw.so.9"       ; FreeBSD 12.x, 13.x, 14.x
+                 "libncursesw.so.8"       ; FreeBSD 11.x and older
+                 "libcurses"))
+  (:unix (:or "libncursesw.so"            ; Unversioned (symlink) - try first!
+              "libncursesw.so.6"          ; Linux (Debian, Ubuntu, etc.)
+              "libncursesw.so.5"          ; Older Linux
+              "libncursesw.so.14.0"       ; OpenBSD/NetBSD
+              "libcurses"))
   (:windows (:or #-pdcurses "libncursesw6.dll"
                  #+pdcurses "libpdcurses"
                  #+pdcurses "pdcurses"
@@ -50,14 +55,20 @@
 (cffi:define-foreign-library libcurses
   (:darwin (:or "libncurses.dylib"
                 "libcurses.dylib"))
-  (:unix (:or "libncursesw.so.6"        ; XXX: is this the right thing
-                                        ; to load? Should we also add
-                                        ; libncursesw.so as a
-                                        ; fallback?
-              "libncurses.so.6"
-              "libncurses.so.5"
-              "libncursesw.so.14.0"
-              "libncurses.so"
+  (:freebsd (:or "libncursesw.so"         ; Wide-char version (preferred)
+                 "libncursesw.so.9"       ; FreeBSD 12.x, 13.x, 14.x
+                 "libncursesw.so.8"       ; FreeBSD 11.x and older
+                 "libncurses.so"          ; Non-wide version
+                 "libncurses.so.9"
+                 "libncurses.so.8"
+                 "libcurses"))
+  (:unix (:or "libncursesw.so"            ; Try wide-char unversioned first
+              "libncurses.so"             ; Then non-wide unversioned
+              "libncursesw.so.6"          ; Linux wide-char
+              "libncurses.so.6"           ; Linux non-wide
+              "libncursesw.so.5"          ; Older Linux wide-char
+              "libncurses.so.5"           ; Older Linux non-wide
+              "libncursesw.so.14.0"       ; OpenBSD/NetBSD
               "libcurses"))
   (:windows (:or #-pdcurses "libncursesw6.dll"
                  #+pdcurses "libpdcurses"         ;MSYS installed pdcurses
