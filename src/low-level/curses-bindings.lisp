@@ -36,18 +36,15 @@
 #+unicode
 (cffi:define-foreign-library libcurses
   (:darwin (:or "libncurses.dylib" "libcurses.dylib"))
-  ;; On Unix-like systems, we try unversioned .so files first as these are
-  ;; symlinks managed by the system that point to the correct version.
-  ;; This is the most portable and future-proof approach.
+  ;; Unversioned .so files are preferred for portability. These are symlinks
+  ;; maintained by the system package manager that point to the correct version,
+  ;; making code work across different OS versions without modification.
   ;;
-  ;; FreeBSD: Ports install libncursesw.so (unversioned) in /usr/local/lib
-  ;;          Base system has libncursesw.so.9 in /lib
-  ;; Linux:   Typically libncursesw.so.6 or .so.5
-  ;; *BSD:    OpenBSD/NetBSD may use .so.14.0
-  (:unix (:or "libncursesw.so"            ; Unversioned - preferred (symlink)
-              "libncursesw.so.9"          ; FreeBSD base system
-              "libncursesw.so.8"          ; FreeBSD older base system
-              "libncursesw.so.6"          ; Linux, some BSD ports
+  ;; Wide-char libraries (libncursesw) are required for Unicode support.
+  (:unix (:or "libncursesw.so"            ; Unversioned (symlink) - most portable
+              "libncursesw.so.9"          ; FreeBSD base
+              "libncursesw.so.8"          ; FreeBSD older
+              "libncursesw.so.6"          ; Linux, BSD ports
               "libncursesw.so.5"          ; Older Linux
               "libncursesw.so.14.0"       ; OpenBSD/NetBSD
               "libcurses"))               ; Generic fallback
@@ -61,26 +58,27 @@
 (cffi:define-foreign-library libcurses
   (:darwin (:or "libncurses.dylib"
                 "libcurses.dylib"))
-  ;; Without unicode support, we try both wide-char and non-wide variants.
-  ;; Unversioned .so files (symlinks) are tried first for maximum portability.
+  ;; Unversioned .so files are preferred for portability. These are symlinks
+  ;; maintained by the system package manager that point to the correct version,
+  ;; making code work across different OS versions without modification.
   ;;
-  ;; FreeBSD: Ports provide libncursesw.so and libncurses.so.6 in /usr/local/lib
-  ;;          Base system has libncursesw.so.9 in /lib
-  ;; Linux:   Package managers provide versioned libraries (.so.6, .so.5)
-  (:unix (:or "libncursesw.so"            ; Wide-char unversioned - preferred
-              "libncurses.so"             ; Non-wide unversioned - preferred
-              "libncursesw.so.9"          ; FreeBSD base system (wide)
-              "libncurses.so.9"           ; FreeBSD base system (non-wide)
-              "libncursesw.so.8"          ; Older FreeBSD (wide)
-              "libncurses.so.8"           ; Older FreeBSD (non-wide)
-              "libncursesw.so.6"          ; Linux/BSD ports (wide)
-              "libncurses.so.6"           ; Linux/BSD ports (non-wide)
+  ;; Even without Unicode feature enabled, we prefer wide-char libraries first
+  ;; since they're backwards-compatible and provide Unicode capability if needed
+  ;; later. Non-wide versions are tried as fallbacks for older/minimal systems.
+  (:unix (:or "libncursesw.so"            ; Wide unversioned (symlink) - most portable
+              "libncursesw.so.9"          ; FreeBSD base (wide)
+              "libncursesw.so.8"          ; FreeBSD older (wide)
+              "libncursesw.so.6"          ; Linux, BSD ports (wide)
               "libncursesw.so.5"          ; Older Linux (wide)
-              "libncurses.so.5"           ; Older Linux (non-wide)
               "libncursesw.so.14.0"       ; OpenBSD/NetBSD
+              "libncurses.so"             ; Non-wide unversioned fallback
+              "libncurses.so.9"           ; FreeBSD base (non-wide)
+              "libncurses.so.8"           ; FreeBSD older (non-wide)
+              "libncurses.so.6"           ; Linux, BSD ports (non-wide)
+              "libncurses.so.5"           ; Older Linux (non-wide)
               "libcurses"))               ; Generic fallback
   (:windows (:or #-pdcurses "libncursesw6.dll"
-                 #+pdcurses "libpdcurses"         ;MSYS installed pdcurses
+                 #+pdcurses "libpdcurses"
                  #+pdcurses "pdcurses"
                  #+pdcurses "libcurses"))
   (t (:default "libcurses")))
